@@ -1,7 +1,7 @@
 TITLE Assignment 2    (template.asm)
 
 ; Author(s): Lauren Gliane
-; Last Modified: 1/16/2025
+; Last Modified: 1/30/2025
 ; OSU email address: glianel@oregonstate.edu
 ; Course number/section: CS 271
 ; Assignment Number: 2                Due Date: 1/30/2025
@@ -16,7 +16,7 @@ PERIMETER_FACTOR = 2
 .data
 
 ; (insert variable definitions here)
-	program_intro		BYTE		"Assignment 2: Calculating factors and primes & Lauren Gliane", 0
+	program_intro		BYTE		"Assignment 2: Calculating factors and primes by Lauren Gliane", 0
 	;EC_message		BYTE		"[Extra Credit has been implemented]", 0
 	instructions		BYTE		"Please enter information to the following prompts to calculate factors and find prime numbers!", 0
 	ask_username		BYTE		"Enter your name: ", 0
@@ -91,9 +91,11 @@ AGAIN2:
 	
 	cmp		eax, lower_range
 	jl		AGAIN2		; restart prompt if not in range
-
 	cmp		eax, upper_range
 	jg		AGAIN2
+
+	cmp		eax, lower_bound	; check upper_bound > lower_bound
+	jle		AGAIN2
 
 	mov		upper_bound, eax
 
@@ -101,8 +103,9 @@ AGAIN2:
 ; 4. Factor Calculation 
 
 number_loop:
-	cmp eax,upper_bound		;compare current number to upper bound
-	jg PROMPT				; exit loop if greater than upper bound
+	mov		eax, lower_bound	
+	cmp		eax, upper_bound		;compare current number to upper bound
+	jg		PROMPT				; exit loop if greater than upper bound
 
 	mov		eax, lower_bound	; print number - start at lower bound
 	call		WriteInt
@@ -119,8 +122,9 @@ factor_loop:
 	cmp		ecx, lower_bound	; loop stops when factor is great than curr number
 	jg		prime_calc		; skip to prime calculation
 
+	mov		eax, lower_bound
 	mov		edx, 0			; clear edx remainder
-	mov		ebx, lower
+	;mov		ebx, lower_bound
 	div		ecx
 	cmp		edx, 0
 	jne		factor_not_found	; skip number if remainder is not zero
@@ -133,18 +137,19 @@ factor_loop:
 	inc		factor_counter		; increment factor counter
 
 factor_not_found:
-	inc		factor_counter
+	inc		ecx				; increment divisor
 	jmp		factor_loop
 
 	
 ; 5. Prime Calculation
 
 prime_calc:
-	cmp		factor_count, 2			; if prime, only two factors (1 and itself)
+	cmp		factor_counter, 2			; if prime, only two factors (1 and itself)
 	jne		not_prime
 
 	mov		edx, OFFSET prime_txt		; print prime indicator
 	call		WriteString
+	call		Crlf
 
 not_prime:
 	call		Crlf
